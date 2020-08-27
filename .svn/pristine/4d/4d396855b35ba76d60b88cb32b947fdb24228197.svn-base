@@ -1,0 +1,18 @@
+import Layout from '@/layout'
+
+const gatherInfoRouter = {
+  path: '/gatherInfo',
+  component: Layout,
+  redirect: 'noRedirect',
+  name: 'gatherInfo',
+  meta: { title: 'gatherInfo', icon: 'el-icon-s-management' },
+  children: [
+    {
+      path:"customer",
+      component:()=> import("@/views/gather-info/customer"),
+      name: 'Customer',
+      meta: { title: 'client_info', icon: 'el-icon-user' }
+    },
+  ]
+}
+export default gatherInfoRouter

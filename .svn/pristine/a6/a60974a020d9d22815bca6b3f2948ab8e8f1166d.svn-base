@@ -1,0 +1,430 @@
+<template>
+  <div class="app-container">
+    <div class="filter-container">
+
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-plus"
+        @click="handleCreate"
+      >
+        {{ $t('common.add') }}
+      </el-button>
+      <el-button
+        v-waves
+        :loading="downloadLoading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >
+        {{ $t('common.export') }}
+      </el-button>
+      <el-checkbox
+        v-model="showUnitAddr"
+        class="filter-item"
+        style="margin-left:15px;"
+      >
+        {{ $t('customer.unitAddres') }}
+      </el-checkbox>
+      <el-checkbox
+        v-model="showDetailAddr"
+        class="filter-item"
+        style="margin-left:15px;"
+      >
+        {{ $t('customer.detailedAddres') }}
+      </el-checkbox>
+      <el-checkbox
+        v-model="showUnitContact"
+        class="filter-item"
+        style="margin-left:15px;"
+      >
+        {{ $t('customer.unitContact') }}
+      </el-checkbox>
+      <el-checkbox
+        v-model="showUnitPhone"
+        class="filter-item"
+        style="margin-left:15px;"
+      >
+        {{ $t('customer.unitPhone') }}
+      </el-checkbox>
+    </div>
+    <el-table
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%;"
+    >
+      <el-table-column :label="$t('customer.unitName')">
+        <template slot-scope="{row}">
+          <span>{{ row.unitName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.unitNature')">
+        <template slot-scope="{row}">
+          <span>{{ row.unitNature }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.industry')">
+        <template slot-scope="{row}">
+          <span>{{ row.industry}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.post')">
+        <template slot-scope="{row}">
+          <span>{{ row.post }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.unitAddres')"
+        v-if="showUnitAddr"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.unitAddres }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.detailedAddres')"
+        v-if="showDetailAddr"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.detailedAddres }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.unitContact')"
+        v-if="showUnitContact"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.unitContact }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.unitPhone')"
+        v-if="showUnitPhone"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.unitPhone }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.startTime')"
+        min-width="100px"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.startTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.endTime')"
+        min-width="100px"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.endTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('common.operate')"
+        min-width="100px"
+        align="center"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="{row,$index}">
+          <el-button
+            type="primary"
+            size="mini"
+            style="margin-right: 5px"
+            @click="handleUpdate(row)"
+          >
+            {{ $t('common.edit') }}
+          </el-button>
+          <el-popover
+            :ref="'popover-' + row.id"
+            placement="top"
+            width="160"
+            :title="$t('common.confirm-delete')"
+            trigger="click"
+          >
+            <div style="text-align: right; margin: 0">
+              <el-button
+                size="mini"
+                @click="$refs[`popover-` + row.id].doClose()"
+              >{{ $t('common.cancel') }}</el-button>
+              <el-button
+                type="primary"
+                size="mini"
+                @click="$refs[`popover-` + row.id].doClose();handleDelete(row,$index)"
+              >{{ $t('common.confirm') }}</el-button>
+            </div>
+            <el-button
+              slot="reference"
+              type="danger"
+              size="mini"
+            >
+              {{ $t('common.delete') }}
+            </el-button>
+          </el-popover>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+    >
+      <el-form
+        ref="dataForm"
+        :rules="rules"
+        :model="temp"
+        label-position="right"
+        label-width="100px"
+        style="width: 100%"
+      >
+        <el-form-item
+          :label="$t('customer.unitName')"
+          prop="unitName"
+        >
+          <el-input
+            v-model="temp.unitName"
+            :placeholder="$t('common.enter')"
+            minlength="3"
+            maxlength="64"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.unitNature')"
+          prop="unitNature"
+        >
+          <el-select
+            v-model="temp.unitNature"
+            :placeholder="$t('common.choose')"
+            clearable
+            class="filter-item"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in NatureOptions"
+              :key="item.value"
+              :label="item.name"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.industry')"
+          prop="industry"
+        >
+          <el-input
+            v-model="temp.industry"
+            :placeholder="$t('common.enter')"
+            minlength="3"
+            maxlength="64"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.post')"
+          prop="post"
+        >
+          <el-input
+            v-model="temp.post"
+            :placeholder="$t('common.enter')"
+            minlength="3"
+            maxlength="64"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.unitAddres')"
+          prop="unitAddres"
+        >
+          <el-input
+            v-model="temp.unitAddres"
+            :placeholder="$t('common.enter')"
+            minlength="3"
+            maxlength="64"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.detailedAddres')"
+          prop="detailedAddres"
+        >
+          <el-input
+            v-model="temp.detailedAddres"
+            :placeholder="$t('common.enter')"
+            minlength="3"
+            maxlength="64"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.unitContact')"
+          prop="unitContact"
+        >
+          <el-input
+            v-model="temp.unitContact"
+            :placeholder="$t('common.enter')"
+            minlength="3"
+            maxlength="64"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.unitPhone')"
+          prop="unitPhone"
+        >
+          <el-input
+            v-model="temp.unitPhone"
+            :placeholder="$t('common.enter')"
+            minlength="3"
+            maxlength="64"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.startTime')"
+          prop="startTime"
+        >
+          <el-date-picker
+            v-model="temp.startTime"
+            type="datetime"
+            :placeholder="$t('common.enter')"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item
+          :label="$t('customer.endTime')"
+          prop="endTime"
+        >
+          <el-date-picker
+            v-model="temp.endTime"
+            type="datetime"
+            :placeholder="$t('common.enter')"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
+      <div
+        slot="footer"
+        class="dialog-footer"
+      >
+
+        <el-button @click="dialogFormVisible = false">
+          {{ $t('common.cancel') }}
+        </el-button>
+        <el-button
+          type="primary"
+          @click="dialogStatus==='create'?createData():updateData()"
+        >
+          {{ $t('common.confirm') }}
+        </el-button>
+      </div>
+    </el-dialog>
+  </div>
+
+</template>
+
+<script>
+import waves from '@/directive/waves' // waves directive
+// eslint-disable-next-line no-unused-vars
+import { parseTime } from '@/utils'
+// eslint-disable-next-line no-unused-vars
+import { getUserData, upWork } from '@/api/getUser-info/work'
+
+export default {
+
+  name: 'Work',
+  directives: { waves },
+  data () {
+
+    return {
+      list: [],
+      temp: {
+        id: undefined
+      },
+      dialogFormVisible: false,
+      dialogStatus: '',
+      textMap: {
+        update: this.$t('common.edit'),
+        create: this.$t('common.add')
+      },
+      rules: {
+
+      },
+      listLoading: false,
+      downloadLoading: false,
+      showUnitAddr: false,
+      showUnitContact: false,
+      showDetailAddr: false,
+      showUnitPhone: false
+    }
+  },
+
+  computed: {
+    NatureOptions () {
+      return [{
+        value: 'zhinan',
+        label: '指南'
+      }, {
+        value: 'jinan',
+        label: '济南'
+      }
+      ]
+    }
+  },
+  methods: {
+    resetTemp () {
+      this.temp = {
+        id: undefined
+      }
+    },
+    handleCreate () {
+      this.resetTemp()
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    // 新增工作经历
+    createData () {
+      console.log(Date.parse(this.temp.startTime))
+      upWork(this.temp)
+    },
+    handleUpdate (row) {
+      this.temp = Object.assign({}, row) // copy obj
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    updateData () {
+      // console.log(this.temp)
+    },
+    // 获取工作经历信息
+    getUserId () {
+      getUserData({
+        consumerId: this.$route.params.id
+      }).then(data => {
+        console.log(data)
+        this.list = data.data
+        this.list[0]['endTime'] = '在职'
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+  },
+  mounted () {
+    this.getUserId()
+  }
+}
+
+</script>
+
+<style lang='less' scoped>
+</style>

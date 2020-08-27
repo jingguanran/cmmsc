@@ -1,0 +1,117 @@
+<template>
+  <div class="app-container">
+    <div class="filter-container">
+        
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh-right" @click="handleReset">
+            {{ $t('common.reset') }}
+        </el-button>
+        <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+            {{ $t('common.add') }}
+        </el-button>
+        <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
+            {{ $t('common.export') }}
+        </el-button>
+    </div>
+
+    <el-table
+      row-key="id"
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%;"
+      @sort-change="sortChange"
+    >
+      <el-table-column :label="$t('customer.client_name')">
+        <template slot-scope="{row}">
+          <span>{{ row.client_name}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.contacts_name')">
+        <template slot-scope="{row}">
+          <span>{{ row.contacts_name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.contacts_phone')">
+        <template slot-scope="{row}">
+          <span>{{ row.contacts_phone }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.client_account')">
+        <template slot-scope="{row}">
+          <span>{{ row.client_account }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.client_city')">
+        <template slot-scope="{row}">
+          <span>{{ row.client_city }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.installed_date')" min-width="100px">
+        <template slot-scope="{row}">
+          <span>{{ row.createTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.enabled')" class-name="status-col">
+        <template slot-scope="{row}">
+          <el-tag :type="row.enabled | statusFilter">
+            <span v-if="row.enabled === 1">{{ $t('common.able') }}</span>
+            <span v-else>{{ $t('common.disable') }}</span>
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('common.operate')" min-width="100px" align="center" class-name="small-padding fixed-width">
+        <template slot-scope="{row,$index}">
+          <el-button type="primary" size="mini" style="margin-right: 5px" @click="handleUpdate(row)">
+            {{ $t('common.edit') }}
+          </el-button>
+          <el-popover :ref="'popover-' + row.id" placement="top" width="160" :title="$t('common.confirm-delete')" trigger="click">
+            <div style="text-align: right; margin: 0">
+              <el-button size="mini" @click="$refs[`popover-` + row.id].doClose()">{{ $t('common.cancel') }}</el-button>
+              <el-button type="primary" size="mini" @click="$refs[`popover-` + row.id].doClose();handleDelete(row,$index)">{{ $t('common.confirm') }}</el-button>
+            </div>
+            <el-button slot="reference" type="danger" size="mini">
+              {{ $t('common.delete') }}
+            </el-button>
+          </el-popover>
+        </template>
+      </el-table-column>
+    </el-table>        
+  </div>
+</template>
+
+<script>
+import waves from '@/directive/waves' // waves directive
+import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+
+export default {
+  name: 'Customer',
+  components: { Pagination },
+  directives: { waves },
+  filters: {
+    statusFilter(status) {
+      const statusMap = {
+        1: 'success',
+        0: 'danger'
+      }
+      return statusMap[status]
+    }
+  },
+  data() {
+    return {
+      tableKey:'',
+      list: [],
+      listLoading: false,
+      downloadLoading: false
+    }
+  },
+  created() {
+   
+  },
+  methods: {
+    
+  }
+}
+</script>
+

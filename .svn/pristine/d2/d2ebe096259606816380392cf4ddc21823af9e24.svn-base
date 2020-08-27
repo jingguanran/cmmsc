@@ -1,0 +1,289 @@
+<template>
+  <div class="app-container">
+    <div class="filter-container">
+      <el-input
+        v-model="listQuery.client_account"
+        :placeholder="$t('customer.clientAccount')"
+        clearable
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+      <el-select
+        v-model="listQuery.enabled"
+        :placeholder="$t('customer.enabled')"
+        clearable
+        style="width: 200px"
+        class="filter-item"
+      >
+        <el-option
+          v-for="item in statusOptions"
+          :key="item.key"
+          :label="item.display_name"
+          :value="item.key"
+        />
+      </el-select>
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter"
+      >
+        {{ $t('common.query') }}
+      </el-button>
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-refresh-right"
+        @click="handleReset"
+      >
+        {{ $t('common.reset') }}
+      </el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-plus"
+        @click="handleCreate"
+      >
+        {{ $t('common.add') }}
+      </el-button>
+      <el-button
+        v-waves
+        :loading="downloadLoading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >
+        {{ $t('common.export') }}
+      </el-button>
+      <el-checkbox
+        v-model="showCity"
+        class="filter-item"
+        style="margin-left:15px;"
+      >
+        {{ $t('customer.clientCity') }}
+      </el-checkbox>
+      <el-checkbox
+        v-model="showCounty"
+        class="filter-item"
+        style="margin-left:15px;"
+      >
+        {{ $t('customer.clientCounty') }}
+      </el-checkbox>
+      <el-checkbox
+        v-model="showAddress"
+        class="filter-item"
+        style="margin-left:15px;"
+      >
+        {{ $t('customer.clientAddress') }}
+      </el-checkbox>
+    </div>
+
+    <el-table
+      row-key="id"
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%;"
+      @sort-change="sortChange"
+    >
+      <el-table-column :label="$t('customer.clientName')">
+        <template slot-scope="{row}">
+          <span>{{ row.clientName}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.contactsName')">
+        <template slot-scope="{row}">
+          <span>{{ row.contactsName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.contactsPhone')">
+        <template slot-scope="{row}">
+          <span>{{ row.contactsPhone }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('customer.clientAccount')">
+        <template slot-scope="{row}">
+          <span>{{ row.clientAccount }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.clientCity')"
+        v-if="showCity"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.clientCity }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.clientCounty')"
+        v-if="showCounty"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.clientCounty }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.clientAddress')"
+        v-if="showAddress"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.clientAddress }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.installedDate')"
+        min-width="100px"
+      >
+        <template slot-scope="{row}">
+          <span>{{ row.installedDate | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('customer.enabled')"
+        class-name="status-col"
+      >
+        <template slot-scope="{row}">
+          <el-tag :type="row.enabled | statusFilter">
+            <span v-if="row.enabled === 1">{{ $t('common.able') }}</span>
+            <span v-else>{{ $t('common.disable') }}</span>
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('common.operate')"
+        min-width="100px"
+        align="center"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="{row}">
+          <el-button
+            type="primary"
+            size="mini"
+            style="margin-right: 5px"
+            @click="goUser(row)"
+          >
+            详细信息
+          </el-button>
+          <el-button
+            type="primary"
+            size="mini"
+            style="margin-right: 5px"
+            @click="handleUpdate(row)"
+          >
+            {{ $t('common.edit') }}
+          </el-button>
+          <el-popover
+            :ref="'popover-' + row.id"
+            placement="top"
+            width="160"
+            :title="$t('common.confirm-delete')"
+            trigger="click"
+          >
+
+            <div style="text-align: right; margin: 0">
+              <el-button
+                size="mini"
+                @click="$refs[`popover-` + row.id].doClose()"
+              >{{ $t('common.cancel') }}</el-button>
+              <el-button
+                type="primary"
+                size="mini"
+                @click="$refs[`popover-` + row.id].doClose();handleDelete(row,$index)"
+              >{{ $t('common.confirm') }}</el-button>
+            </div>
+            <el-button
+              slot="reference"
+              type="danger"
+              size="mini"
+            >
+              {{ $t('common.delete') }}
+            </el-button>
+          </el-popover>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.currentPage"
+      :limit.sync="listQuery.pageSize"
+      @pagination="getList"
+    />
+  </div>
+</template>
+
+<script>
+import waves from '@/directive/waves' // waves directive
+import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+
+export default {
+  name: 'Customer',
+  components: { Pagination },
+  directives: { waves },
+  filters: {
+    statusFilter (status) {
+      const statusMap = {
+        1: 'success',
+        0: 'danger'
+      }
+      return statusMap[status]
+    }
+  },
+  data () {
+    return {
+      tableKey: '',
+      listQuery: {
+        currentPage: 1,
+        pageSize: 10,
+        clientAccount: undefined,
+        enabled: undefined,
+        sorter: 'createTime_descend'
+      },
+      list: [
+
+      ],
+      statusOptions: [
+        { key: '1', display_name: this.$t('common.able') },
+        { key: '0', display_name: this.$t('common.disable') }
+      ],
+      showCounty: false,
+      showCity: false,
+      showAddress: false,
+      listLoading: false,
+      downloadLoading: false
+    }
+  },
+  created () {
+    this.getList()
+  },
+  methods: {
+    getList () {
+      this.listLoading = true
+      setTimeout(() => {
+        var data = [
+          {
+            'clientName': 'aaa',
+            enabled: 1,
+            'installedDate': 1596417644000
+          }
+        ]
+        this.list = data
+        this.total = data.length
+        this.listLoading = false
+      }, 1000)
+    },
+    goUser (row) {
+      this.$router.push({ path: 'UserDetails/index', query: { id: 300401 } })
+    }
+  }
+}
+</script>
+
