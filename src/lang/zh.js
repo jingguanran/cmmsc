@@ -2,6 +2,7 @@ export default {
   route: {
     'dashboard': '首页',
     'template': '模板实例',
+    'staffInfo': '员工信息管理',
     'guide': '引导页',
     'permission': '权限测试页',
     'rolePermission': '角色权限',
