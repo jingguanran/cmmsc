@@ -41,6 +41,12 @@ import gatherInfoRouter from './modules/gather_info'
 
 export const templateRoutes = [
   {
+    path: '/staff-info',
+    component: () => import('@/views/staff-info/index'),
+    name: 'staffInfo',
+    meta: { title: 'staffInfo', icon: 'guide', noCache: true }
+  },
+  {
     path: 'guide',
     component: () => import('@/views/guide/index'),
     name: 'Guide',
