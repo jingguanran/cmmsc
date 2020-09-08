@@ -18,6 +18,7 @@ import adminRouter from './modules/admin'
 import personaloaRouter from './modules/personaloa'
 import nestedRouter from './modules/nested'
 import gatherInfoRouter from './modules/gather_info'
+import employeeRouter from './modules/employeeRouter'
 /**
  * Note: sub-menu only appear when route children.length >= 1
  * Detail see: https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
@@ -280,6 +281,7 @@ export const constantRoutes = [
   adminRouter,
   personaloaRouter,
   gatherInfoRouter,
+  employeeRouter,
   {
     path: '/template',
     component: Layout,
