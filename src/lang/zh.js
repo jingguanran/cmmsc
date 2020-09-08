@@ -75,7 +75,11 @@ export default {
     'mytaskdetails': '我的任务详情',
     'gatherInfo': '信息收集管理',
     'client_info': '客户信息',
-    'client_detail_info': '客户详细信息'
+    'client_detail_info': '客户详细信息',
+    'employee': '员工激活统计',
+    'activation': '省级单位',
+    'subordinateUnit': '地市级单位',
+    'employeeInfo': '员工详情',
   },
   navbar: {
     'dashboard': '首页',
