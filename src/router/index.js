@@ -45,7 +45,7 @@ export const templateRoutes = [
     path: '/staff-info',
     component: () => import('@/views/staff-info/index'),
     name: 'staffInfo',
-    meta: { title: 'staffInfo', icon: 'guide', noCache: true }
+    meta: { title: 'staffInfo', icon: 'el-icon-edit-outline', noCache: true }
   },
   {
     path: 'guide',
@@ -234,6 +234,7 @@ export const templateRoutes = [
  * all roles can be accessed
  */
 export const constantRoutes = [
+
   {
     path: '/redirect',
     component: Layout,
