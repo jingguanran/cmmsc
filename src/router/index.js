@@ -41,12 +41,7 @@ import employeeRouter from './modules/employeeRouter'
  */
 
 export const templateRoutes = [
-  {
-    path: '/staff-info',
-    component: () => import('@/views/staff-info/index'),
-    name: 'staffInfo',
-    meta: { title: 'staffInfo', icon: 'guide', noCache: true }
-  },
+
   {
     path: 'guide',
     component: () => import('@/views/guide/index'),
@@ -234,6 +229,19 @@ export const templateRoutes = [
  * all roles can be accessed
  */
 export const constantRoutes = [
+  {
+    path: '/staff-info',
+    component: Layout,
+    children:[
+      {
+        path:'index',
+        component: () => import('@/views/staff-info/index'),
+        name: 'staffInfo',
+        meta: { title: 'staffInfo', icon: 'guide', noCache: true }
+      }
+    ],
+   
+  },
   {
     path: '/redirect',
     component: Layout,

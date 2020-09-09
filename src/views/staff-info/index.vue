@@ -3,7 +3,7 @@
     <el-row :gutter="30">
       <el-col :span="8">
         <div class="tree">
-          <el-input placeholder="请输入部门名称" v-model="filterText"></el-input>
+          <el-input suffix-icon="el-icon-search" placeholder="请输入部门名称" v-model="filterText"></el-input>
 
           <el-tree
             class="filter-tree"
@@ -17,14 +17,18 @@
       </el-col>
       <el-col :span="16">
         <div class="content">
-          <el-form :inline="true" :model="formInline" class="demo-form-inline">
+          <el-form :inline="true" :model="listQuery" class="demo-form-inline">
             <el-form-item label="员工姓名">
-              <el-input v-model="formInline.user" placeholder="请输入员工姓名"></el-input>
+              <el-input v-model="listQuery.staffName" placeholder="请输入员工姓名"></el-input>
             </el-form-item>
             <el-form-item label="职务">
-              <el-select v-model="formInline.region" placeholder="请选择">
-                <el-option v-for="item in rollList" :label="item.name" :value="item.value" :key="item.id"></el-option>
-                
+              <el-select v-model="listQuery.role" placeholder="请选择">
+                <el-option
+                  v-for="item in roleList"
+                  :label="item.name"
+                  :value="item.value"
+                  :key="item.id"
+                ></el-option>
               </el-select>
             </el-form-item>
             <el-form-item>
@@ -49,6 +53,7 @@
   </div>
 </template>
 <script>
+import { queryStaffInfo, queryGroup, queryRole } from "@/api/staff-info";
 export default {
   watch: {
     filterText(val) {
@@ -57,25 +62,34 @@ export default {
   },
 
   methods: {
-    treeClick(e,e2,e3) {
-      console.log(e,e2,e3)
+    treeClick(e, node) {
+      console.log(node);
+      this.listQuery.staffName = "";
+      this.listQuery.role = "";
+      this.listQuery.corpId = node.data.id;
+      this.getStaffList();
     },
     getStaffList() {
-      queryStaffInfo(this.listQuery).then(response=>{
-         this.tableData = response.data.list
-      })
+      queryStaffInfo(this.listQuery).then((response) => {
+        this.tableData = response.data.list;
+      });
     },
-    getGroupList(){
-      queryGroup().then(response=>{
-        this.groupData = response.data.list
-      })
+    getGroupList() {
+      queryGroup().then((response) => {
+        this.groupData = response.data.list;
+      });
+    },
+    getRoleList() {
+      queryRole(this.listQuery).then((response) => {
+        this.roleList = response.data.list;
+      });
     },
     onSubmit(e) {
-      console.log(Object.assign(this.listQuery,this.formInline))
-      console.log(e);
+      this.getStaffList();
     },
     handleCurrentChange(e) {
-      console.log(e);
+      this.listQuery.currentPage = e;
+      this.getStaffList();
     },
     filterNode(value, data) {
       if (!value) return true;
@@ -85,43 +99,49 @@ export default {
 
   data() {
     return {
-      rollList:[{
-        id:1,
-        name:"经理",
-        value:"s1"
-      },
-      {
-        id:2,
-        name:"经理",
-        value:"s2"
-      }],
+      roleList: [
+        {
+          id: 1,
+          name: "经理",
+          value: "s1",
+        },
+        {
+          id: 2,
+          name: "经理",
+          value: "s2",
+        },
+      ],
       listLoading: true,
       listQuery: {
         currentPage: 1,
         pageSize: 10,
-        id:1
+        corpId: 1, //公司ID
+        staffName: "",
+        role: "",
       },
-      tableData: [{
-            date: '2016-05-02',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1518 弄'
-          }, {
-            date: '2016-05-04',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1517 弄'
-          }, {
-            date: '2016-05-01',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1519 弄'
-          }, {
-            date: '2016-05-03',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1516 弄'
-          }],
-      formInline: {
-        user: "",
-        region: "",
-      },
+      tableData: [
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1517 弄",
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1519 弄",
+        },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1516 弄",
+        },
+      ],
+
       filterText: "",
       groupData: [
         {
@@ -192,5 +212,11 @@ export default {
   padding: 24px;
   height: 1000px;
   border-radius: 4px;
+}
+.el-pagination {
+  margin-top: 24px;
+}
+.el-tree {
+  margin-top: 14px;
 }
 </style>
