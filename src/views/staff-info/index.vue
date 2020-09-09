@@ -35,7 +35,7 @@
               <el-button type="primary" @click="onSubmit">查询</el-button>
             </el-form-item>
           </el-form>
-          <el-table :data="tableData" style="width: 100%">
+          <el-table v-loading="loading" :data="tableData" style="width: 100%">
             <el-table-column prop="date" label="员工姓名" width="180"></el-table-column>
             <el-table-column prop="name" label="性别" width="100"></el-table-column>
             <el-table-column prop="address" label="手机号"></el-table-column>
@@ -70,8 +70,10 @@ export default {
       this.getStaffList();
     },
     getStaffList() {
+      this.loading=true
       queryStaffInfo(this.listQuery).then((response) => {
         this.tableData = response.data.list;
+        this.loading=false
       });
     },
     getGroupList() {
@@ -99,6 +101,7 @@ export default {
 
   data() {
     return {
+      loading: false,
       roleList: [
         {
           id: 1,
